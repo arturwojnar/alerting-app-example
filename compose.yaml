@@ -1,0 +1,19 @@
+services:
+
+  db:
+    image: postgres:18-alpine
+    restart: always
+    ports:
+      - 5432:5432
+    # set shared memory limit when using docker compose
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: alerting # The PostgreSQL user (useful to connect to the database)
+      POSTGRES_PASSWORD: alerting # The PostgreSQL password (useful to connect to the database)
+      POSTGRES_DB: alerting # The PostgreSQL default database (automatically created at first launch)
+    volumes:
+      # In this example, we share the folder `db-data` in our root repository, with the default PostgreSQL data path.
+      # It means that every time the repository is modifying the data inside
+      # of `/var/lib/postgresql/data/`, automatically the change will appear in `db-data`.
+      # You don't need to create the `db-data` folder. Docker Compose will do it for you.
+      - ./db-data/:/var/lib/postgresql/data/

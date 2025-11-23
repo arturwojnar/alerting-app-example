@@ -30,3 +30,13 @@ This is a training repository showing an example implementation of a healthcare 
 - **AC13**. Patients with a big alert receive a 15% discount.
 - **AC14**. Small-alert and big-alert discounts do not combine with each other.
 - **AC15**. The elderly discount can be combined with either the small-alert or big-alert discount.
+
+# Setup
+
+## Dependencies
+
+Run docker compose to start needed dependencies:
+
+```bash
+docker compose up -d
+```
