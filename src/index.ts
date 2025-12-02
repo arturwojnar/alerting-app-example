@@ -1,3 +1,7 @@
-import { listen } from './core/infrastructure/server.ts'
+import 'reflect-metadata'
+import { listen } from './core/infrastructure/server.js'
 
-listen()
+listen().catch((error) => {
+  console.error('Failed to start server:', error)
+  process.exit(1)
+})

@@ -1,0 +1,72 @@
+classDiagram
+    class User {
+        +uuid id
+        +UserRole role
+        +Date dateOfBirth
+        +Sex sex
+        +string race
+        +Date createdAt
+        +Measurement[] measurements
+        +Alert[] alerts
+        +addUser(dateOfBirth, sex, race, role)$ User
+    }
+
+    class Measurement {
+        +uuid id
+        +MeasurementType measurementType
+        +float value
+        +Date measuredAt
+        +uuid userId
+        +Date createdAt
+        +User user
+        +addMeasurement(user, type, value, measuredAt?)$ Measurement
+    }
+
+    class Alert {
+        +uuid id
+        +AlertType type
+        +boolean resolved
+        +uuid userId
+        +Date createdAt
+        +Date updatedAt
+        +User user
+        +checkMeasurement(user, type, value)$ void
+        +raiseSmallAlert(user)$ Alert
+        +checkIfBigAlertShouldBeRaised(user)$ void
+        +raiseBigAlert(user)$ Alert
+        +resolve() boolean
+    }
+
+    class UserRole {
+        <<enumeration>>
+        PATIENT
+        MEDICAL_DOCTOR
+    }
+
+    class Sex {
+        <<enumeration>>
+        MALE
+        FEMALE
+    }
+
+    class MeasurementType {
+        <<enumeration>>
+        ALT
+        FIBROSIS
+    }
+
+    class AlertType {
+        <<enumeration>>
+        SMALL
+        BIG
+    }
+
+    User "1" --o "0..*" Measurement : has
+    User "1" --o "0..*" Alert : has
+    Measurement ..> Alert : triggers checking
+    Alert ..> Measurement : evaluates
+
+    User --> UserRole : uses
+    User --> Sex : uses
+    Measurement --> MeasurementType : uses
+    Alert --> AlertType : uses

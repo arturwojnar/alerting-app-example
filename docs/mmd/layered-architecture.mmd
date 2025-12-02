@@ -1,0 +1,76 @@
+graph TB
+    subgraph Controllers["🎮 Controllers Layer"]
+        UC[UserController]
+        MC[MeasurementController]
+        AC[AlertController]
+    end
+
+    subgraph Services["⚙️ Services Layer"]
+        US[UserService]
+        MS[MeasurementService]
+        AS[AlertService]
+    end
+
+    subgraph Domain["🏛️ Domain Layer<br/>Pure Business Logic"]
+        U[User<br/>Entity]
+        M[Measurement<br/>Entity]
+        A[Alert<br/>Business Rules]
+    end
+
+    subgraph Repositories["💾 Repositories Layer"]
+        UR[UserRepository]
+        MR[MeasurementRepository]
+        AR[AlertRepository]
+    end
+
+    subgraph Infrastructure["🔧 Infrastructure Layer"]
+        DB[(AppDataSource<br/>TypeORM)]
+    end
+
+    %% Controllers → Services
+    UC --> US
+    MC --> MS
+    AC --> AS
+
+    %% Services → Domain (uses business logic)
+    US --> U
+    MS --> M
+    MS --> A
+    AS --> A
+    AS --> M
+
+    %% Services → Repositories (data persistence)
+    US --> UR
+    MS --> MR
+    AS --> AR
+    AS --> MR
+
+    %% Services → Infrastructure (direct access)
+    US --> DB
+    MS --> DB
+    AS --> DB
+
+    %% Repositories → Domain (for types)
+    UR -.-> U
+    MR -.-> M
+    AR -.-> A
+
+    %% Repositories → Infrastructure
+    UR --> DB
+    MR --> DB
+    AR --> DB
+
+    %% Domain stays pure - no outgoing dependencies! ✓
+
+    classDef controller fill:#4CAF50,stroke:#2E7D32,color:#fff
+    classDef service fill:#2196F3,stroke:#1565C0,color:#fff
+    classDef domain fill:#FF9800,stroke:#E65100,color:#fff
+    classDef repository fill:#9C27B0,stroke:#6A1B9A,color:#fff
+    classDef infrastructure fill:#607D8B,stroke:#37474F,color:#fff
+    classDef clean stroke:#4CAF50,stroke-width:3px
+
+    class UC,MC,AC controller
+    class US,MS,AS service
+    class U,M,A domain
+    class UR,MR,AR repository
+    class DB infrastructure

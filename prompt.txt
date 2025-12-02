@@ -1,0 +1,48 @@
+The goal is to implement the requirements (AC1-AC8):
+- AC1. My system receives the patient’s test results: alanine aminotransferase (ALT – U/L) and liver fibrosis level on the METAVIR scale F0–F4 from elastography.
+- AC2. ALT above 35 U/L for women / 45 U/L for men generates a small alert.
+- AC3. Fibrosis levels F1, F2, F3, and F4 generate a small alert.
+- AC4. After three consecutive alarming ALT–fibrosis result pairs, taken at intervals of at least one month, we calculate the liver cancer risk level using the formula:(patient age / 70) * (median fibrosis / 4) * (mean ALT / [last ALT result + first ALT result])
+- AC5. If the calculated liver cancer risk level is greater than 0.3, we generate a big alert.
+- AC6. A doctor may resolve a big alert → this resolves all small alerts.
+- AC7. A doctor may resolve small alerts, but when a big alert appears, small alerts cannot be resolved.
+- AC8. No new alerts can be generated if a big alert has not been resolved.
+
+Please follow my instruction.
+Use typeorm to handle the database queries. You use NodeJS and TypeScript.
+Right now, the src/index.ts just runs a fastify server.
+
+Create the folder structure in the src that follows layered architecture:
+- src/controllers
+- src/services
+- src/domain
+- src/repositories
+
+Implement the following classes in the layers. These are classes that should be placed in the domain:
+
+1. User
+
+Two roles: Patient and MedicalDoctor
+
+A static method:
+- addUser(dateOfBirth, sex, race)
+
+2. Measurement
+
+The measurementType is either ALT or fibrosis.
+
+The methods:
+- addMeasurement(user, type, value)
+
+The Measurement should inject the Alert and invoke its checkMeasurement method
+
+3. Alert
+
+The statis methods:
+- checkMeasurement(user, type, value)
+- raiseSmallAlert
+- checkIfBigAlertShouldBeRaised
+- raiseBigAlert
+
+The methods:
+- resolve(). It should get, e.g. in the services layer, the alarms and the resolve method should check whether they can be resolved and resolve if that's possible.

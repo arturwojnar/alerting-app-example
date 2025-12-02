@@ -6,8 +6,8 @@
     "target": "esnext",
     "module": "nodenext",
     "rewriteRelativeImportExtensions": true,
-    "erasableSyntaxOnly": true,
-    "verbatimModuleSyntax": true
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "$schema": "https://www.schemastore.org/tsconfig"
 }

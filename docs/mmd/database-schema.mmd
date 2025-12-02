@@ -1,0 +1,30 @@
+erDiagram
+    users ||--o{ measurements : "has"
+    users ||--o{ alerts : "has"
+
+    users {
+        uuid id PK
+        enum role "patient | medical_doctor"
+        date dateOfBirth
+        enum sex "male | female"
+        string race
+        timestamp createdAt
+    }
+
+    measurements {
+        uuid id PK
+        uuid userId FK
+        enum measurementType "ALT | FIBROSIS"
+        float value
+        timestamp measuredAt
+        timestamp createdAt
+    }
+
+    alerts {
+        uuid id PK
+        uuid userId FK
+        enum type "small | big"
+        boolean resolved
+        timestamp createdAt
+        timestamp updatedAt
+    }
