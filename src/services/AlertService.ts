@@ -1,6 +1,6 @@
 import { AlertRepository } from '../repositories/AlertRepository.js'
 import { MeasurementRepository } from '../repositories/MeasurementRepository.js'
-import { Alert, AlertType } from '../domain/Alert.js'
+import { Alert, AlertType, AlertImportance } from '../domain/Alert.js'
 import { User } from '../domain/User.js'
 import { MeasurementType } from '../domain/Measurement.js'
 import { AppDataSource } from '../core/infrastructure/database.js'
@@ -159,6 +159,20 @@ export class AlertService {
     }
 
     return false
+  }
+
+  async setAlertImportance(
+    id: string,
+    importance: AlertImportance,
+  ): Promise<Alert> {
+    const alert = await this.alertRepository.findById(id)
+    if (!alert) {
+      throw new Error(`Alert with id ${id} not found`)
+    }
+
+    const repository = AppDataSource.getRepository(Alert)
+    alert.importance = importance
+    return await repository.save(alert)
   }
 
   async deleteAlert(id: string): Promise<void> {

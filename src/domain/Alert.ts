@@ -14,6 +14,13 @@ export enum AlertType {
   BIG = 'big',
 }
 
+export enum AlertImportance {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  CRITICAL = 'critical',
+}
+
 export interface AlarmingPair {
   alt: Measurement
   fibrosis: Measurement
@@ -30,6 +37,13 @@ export class Alert {
     enum: AlertType,
   })
   type!: AlertType
+
+  @Column({
+    type: 'enum',
+    enum: AlertImportance,
+    nullable: true,
+  })
+  importance?: AlertImportance
 
   @Column({ default: false })
   resolved!: boolean

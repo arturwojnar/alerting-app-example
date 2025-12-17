@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { AlertService } from '../services/AlertService.js'
+import { AlertImportance } from '../domain/Alert.js'
 
 interface GetAlertParams {
   id: string
@@ -11,6 +12,14 @@ interface GetUserAlertsParams {
 
 interface ResolveAlertBody {
   alertId: string
+}
+
+interface SetImportanceParams {
+  id: string
+}
+
+interface SetImportanceBody {
+  importance: AlertImportance
 }
 
 export class AlertController {
@@ -28,9 +37,7 @@ export class AlertController {
         reply: FastifyReply,
       ) => {
         try {
-          const alert = await this.alertService.getAlertById(
-            request.params.id,
-          )
+          const alert = await this.alertService.getAlertById(request.params.id)
           if (!alert) {
             reply.code(404).send({ error: 'Alert not found' })
             return
@@ -66,10 +73,9 @@ export class AlertController {
         reply: FastifyReply,
       ) => {
         try {
-          const alerts =
-            await this.alertService.getUnresolvedAlertsByUserId(
-              request.params.userId,
-            )
+          const alerts = await this.alertService.getUnresolvedAlertsByUserId(
+            request.params.userId,
+          )
           reply.send(alerts)
         } catch (error) {
           reply.code(500).send({ error: (error as Error).message })
@@ -77,14 +83,17 @@ export class AlertController {
       },
     )
 
-    fastify.get('/alerts', async (_request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const alerts = await this.alertService.getAllAlerts()
-        reply.send(alerts)
-      } catch (error) {
-        reply.code(500).send({ error: (error as Error).message })
-      }
-    })
+    fastify.get(
+      '/alerts',
+      async (_request: FastifyRequest, reply: FastifyReply) => {
+        try {
+          const alerts = await this.alertService.getAllAlerts()
+          reply.send(alerts)
+        } catch (error) {
+          reply.code(500).send({ error: (error as Error).message })
+        }
+      },
+    )
 
     fastify.post(
       '/alerts/resolve',
@@ -103,6 +112,28 @@ export class AlertController {
             return
           }
           reply.send({ success: true, message: 'Alert resolved successfully' })
+        } catch (error) {
+          reply.code(400).send({ error: (error as Error).message })
+        }
+      },
+    )
+
+    fastify.put(
+      '/alerts/:id/importance',
+      async (
+        request: FastifyRequest<{
+          Params: SetImportanceParams
+          Body: SetImportanceBody
+        }>,
+        reply: FastifyReply,
+      ) => {
+        try {
+          const { importance } = request.body
+          const alert = await this.alertService.setAlertImportance(
+            request.params.id,
+            importance,
+          )
+          reply.send(alert)
         } catch (error) {
           reply.code(400).send({ error: (error as Error).message })
         }

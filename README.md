@@ -421,12 +421,18 @@ Data access for Alert entities with specialized queries:
 
 - `GET /alerts` - Get all alerts
 - `GET /alerts/:id` - Get a specific alert
-- `GET /users/:userId/alerts` - Get all alerts for a user
-- `GET /users/:userId/alerts/unresolved` - Get unresolved alerts for a user
+- `GET /users/:userId/alerts` - Get all alerts for a user (includes importance level)
+- `GET /users/:userId/alerts/unresolved` - Get unresolved alerts for a user (includes importance level)
 - `POST /alerts/resolve` - Resolve an alert
   ```json
   {
     "alertId": "uuid"
+  }
+  ```
+- `PUT /alerts/:id/importance` - Set the importance level of an alert
+  ```json
+  {
+    "importance": "low" | "medium" | "high" | "critical"
   }
   ```
 - `DELETE /alerts/:id` - Delete an alert

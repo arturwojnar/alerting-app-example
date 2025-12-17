@@ -23,6 +23,7 @@ classDiagram
     class Alert {
         +uuid id
         +AlertType type
+        +AlertImportance importance
         +boolean resolved
         +uuid userId
         +Date createdAt
@@ -67,6 +68,14 @@ classDiagram
         BIG
     }
 
+    class AlertImportance {
+        <<enumeration>>
+        LOW
+        MEDIUM
+        HIGH
+        CRITICAL
+    }
+
     User "1" --o "0..*" Measurement : has
     User "1" --o "0..*" Alert : has
     Alert ..> Measurement : evaluates
@@ -77,4 +86,5 @@ classDiagram
     User --> Sex : uses
     Measurement --> MeasurementType : uses
     Alert --> AlertType : uses
+    Alert --> AlertImportance : uses
     AlarmingPair --> Measurement : contains
