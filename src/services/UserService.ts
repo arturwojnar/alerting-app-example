@@ -36,4 +36,8 @@ export class UserService {
   async deleteUser(id: string): Promise<void> {
     await this.userRepository.delete(id)
   }
+
+  async getPriorityPatients(): Promise<User[]> {
+    return await this.userRepository.findPriorityPatients()
+  }
 }

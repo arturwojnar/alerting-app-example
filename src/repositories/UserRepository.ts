@@ -1,5 +1,6 @@
 import { AppDataSource } from '../core/infrastructure/database.js'
-import { User } from '../domain/User.js'
+import { AlertType } from '../domain/Alert.js'
+import { User, UserRole } from '../domain/User.js'
 
 export class UserRepository {
   private repository = AppDataSource.getRepository(User)
@@ -10,6 +11,20 @@ export class UserRepository {
 
   async findAll(): Promise<User[]> {
     return await this.repository.find()
+  }
+
+  async findPriorityPatients(): Promise<User[]> {
+    return await this.repository
+      .createQueryBuilder('user')
+      .innerJoin(
+        'user.alerts',
+        'alert',
+        'alert.type = :type AND alert.resolved = :resolved',
+        { type: AlertType.BIG, resolved: false },
+      )
+      .where('user.role = :role', { role: UserRole.PATIENT })
+      .orderBy('alert.createdAt', 'DESC')
+      .getMany()
   }
 
   async save(user: User): Promise<User> {

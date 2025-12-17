@@ -61,14 +61,29 @@ export class UserController {
       },
     )
 
-    fastify.get('/users', async (_request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const users = await this.userService.getAllUsers()
-        reply.send(users)
-      } catch (error) {
-        reply.code(500).send({ error: (error as Error).message })
-      }
-    })
+    fastify.get(
+      '/users',
+      async (_request: FastifyRequest, reply: FastifyReply) => {
+        try {
+          const users = await this.userService.getAllUsers()
+          reply.send(users)
+        } catch (error) {
+          reply.code(500).send({ error: (error as Error).message })
+        }
+      },
+    )
+
+    fastify.get(
+      '/users/priority',
+      async (_request: FastifyRequest, reply: FastifyReply) => {
+        try {
+          const priorityPatients = await this.userService.getPriorityPatients()
+          reply.send(priorityPatients)
+        } catch (error) {
+          reply.code(500).send({ error: (error as Error).message })
+        }
+      },
+    )
 
     fastify.delete(
       '/users/:id',

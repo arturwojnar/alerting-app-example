@@ -397,6 +397,7 @@ Data access for Alert entities with specialized queries:
   }
   ```
 - `GET /users` - Get all users
+- `GET /users/priority` - Get priority patients (patients with unresolved big alerts)
 - `GET /users/:id` - Get a specific user
 - `DELETE /users/:id` - Delete a user
 
