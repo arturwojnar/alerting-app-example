@@ -8,7 +8,6 @@ classDiagram
         +Date createdAt
         +Measurement[] measurements
         +Alert[] alerts
-        +addUser(dateOfBirth, sex, race, role)$ User
     }
 
     class Measurement {
@@ -19,7 +18,6 @@ classDiagram
         +uuid userId
         +Date createdAt
         +User user
-        +addMeasurement(user, type, value, measuredAt?)$ Measurement
     }
 
     class Alert {
@@ -30,11 +28,19 @@ classDiagram
         +Date createdAt
         +Date updatedAt
         +User user
-        +checkMeasurement(user, type, value)$ void
-        +raiseSmallAlert(user)$ Alert
-        +checkIfBigAlertShouldBeRaised(user)$ void
-        +raiseBigAlert(user)$ Alert
-        +resolve() boolean
+        +shouldTriggerAltAlert(value, sex)$ boolean
+        +shouldTriggerFibrosisAlert(value)$ boolean
+        +findAlarmingPairs(measurements, user)$ AlarmingPair[]
+        +findValidConsecutivePairs(pairs, count)$ AlarmingPair[]
+        +calculateLiverCancerRisk(pairs, user)$ number
+        +shouldRaiseBigAlert(riskLevel)$ boolean
+    }
+
+    class AlarmingPair {
+        <<interface>>
+        +Measurement alt
+        +Measurement fibrosis
+        +Date date
     }
 
     class UserRole {
@@ -63,10 +69,12 @@ classDiagram
 
     User "1" --o "0..*" Measurement : has
     User "1" --o "0..*" Alert : has
-    Measurement ..> Alert : triggers checking
     Alert ..> Measurement : evaluates
+    Alert ..> User : uses for calculation
+    Alert ..> AlarmingPair : returns
 
     User --> UserRole : uses
     User --> Sex : uses
     Measurement --> MeasurementType : uses
     Alert --> AlertType : uses
+    AlarmingPair --> Measurement : contains
