@@ -59,6 +59,9 @@ export class AlertService {
       }
     }
 
+    // Check fatty liver risk: fibrosis > 1 AND ALT above threshold
+    await this.checkFattyLiverRisk(user)
+
     // AC4: Check if big alert should be raised
     await this.checkIfBigAlertShouldBeRaised(user)
   }
@@ -72,6 +75,46 @@ export class AlertService {
       userId: user.id,
     })
     return await repository.save(alert)
+  }
+
+  // Check fatty liver risk: fibrosis > 1 (levels 2,3,4) AND ALT above threshold
+  private async checkFattyLiverRisk(user: User): Promise<void> {
+    // Get all measurements for the user
+    const measurements = await this.measurementRepository.findByUserId(user.id)
+
+    // Group measurements by date to find pairs
+    const measurementsByDate = new Map<string, typeof measurements>()
+    for (const m of measurements) {
+      const dateKey = m.measuredAt.toISOString().split('T')[0]
+      if (!measurementsByDate.has(dateKey)) {
+        measurementsByDate.set(dateKey, [])
+      }
+      measurementsByDate.get(dateKey)!.push(m)
+    }
+
+    // Check each date for fatty liver risk condition
+    for (const dateMeasurements of measurementsByDate.values()) {
+      const altMeasurement = dateMeasurements.find(
+        (m) => m.measurementType === MeasurementType.ALT,
+      )
+      const fibrosisMeasurement = dateMeasurements.find(
+        (m) => m.measurementType === MeasurementType.FIBROSIS,
+      )
+
+      // If we have both measurements on the same day, check the condition
+      if (altMeasurement && fibrosisMeasurement) {
+        if (
+          Alert.shouldTriggerFattyLiverRiskAlert(
+            altMeasurement.value,
+            fibrosisMeasurement.value,
+            user.sex,
+          )
+        ) {
+          await this.raiseSmallAlert(user)
+          return // Raise alert only once
+        }
+      }
+    }
   }
 
   // AC4-AC5: Check if big alert should be raised based on measurements

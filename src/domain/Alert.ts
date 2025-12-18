@@ -181,4 +181,15 @@ export class Alert {
   static shouldRaiseBigAlert(riskLevel: number): boolean {
     return riskLevel > 0.3
   }
+
+  // Fatty liver risk check: fibrosis > 1 (levels 2,3,4) AND ALT above threshold
+  static shouldTriggerFattyLiverRiskAlert(
+    altValue: number,
+    fibrosisValue: number,
+    sex: Sex,
+  ): boolean {
+    const isAltAboveThreshold = Alert.shouldTriggerAltAlert(altValue, sex)
+    const isFibrosisAbove1 = fibrosisValue >= 2 && fibrosisValue <= 4
+    return isAltAboveThreshold && isFibrosisAbove1
+  }
 }
