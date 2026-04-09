@@ -25,7 +25,7 @@ import type { PongoDocument } from '@event-driven-io/pongo'
 `f(command, state) → events`. One `case` per command. `default` must use `assertNever`.
 
 ```ts
-import { objectLiteral, assertNever } from '@event-driven-io/emmett'
+import { literalObject, assertNever } from '@chassisjs/hermes'
 
 const decide = (command: AlertCommand, state: LiverCancerRiskMonitor): AlertEvent[] => {
   const { type, data, metadata } = command
@@ -65,7 +65,7 @@ export { decide }
 Initial state = `null`; return `null` unchanged for unrecognised state transitions.
 
 ```ts
-import { objectLiteral, assertNever } from '@event-driven-io/emmett'
+import { literalObject, assertNever } from '@chassisjs/hermes'
 
 const initialState = null
 

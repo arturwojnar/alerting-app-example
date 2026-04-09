@@ -56,3 +56,4 @@ Fix all errors before moving to the next checklist step.
 - **[TYPES.md](TYPES.md)** — TypeScript conventions: Value Objects, Flavour, DeepReadonly, discriminated unions, Command/Event
 - **[PATTERNS.md](PATTERNS.md)** — decide.ts, evolve.ts, command handler, and projection templates
 - **[SPEC-FORMAT.md](SPEC-FORMAT.md)** — spec.md section structure, AI-suggested annotation format, history entries
+- **[EMMETT-HERMES.md](EMMETT-HERMES.md)** — practical reference: imports, common pitfalls, API surface for emmett ~0.42.0 and hermes ~1.0.0-alpha.16
