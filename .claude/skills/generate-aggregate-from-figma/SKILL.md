@@ -21,7 +21,7 @@ Copy this checklist and track progress:
 - [ ] 2. Call get_figjam with the nodeId and fileKey from the URL
 - [ ] 3. Read existing files in the target slice folder (if any)
 - [ ] 4. Generate / update spec.md — see SPEC-FORMAT.md
-- [ ] 5. Ask the user to approve the spec before writing code
+- [ ] 5. IMPORTANT! Ask the user to approve the spec before writing code. Ask separately about the Write Model and suggested props
 - [ ] 6. Write / complete type.ts, command.ts, event.ts — see TYPES.md
 - [ ] 7. Write decide.ts and evolve.ts — see PATTERNS.md
 - [ ] 8. Write the command handler — see PATTERNS.md
@@ -49,6 +49,27 @@ npx prettier --check src/ # formatting check
 ```
 
 Fix all errors before moving to the next checklist step.
+
+## Type conventions (MUST follow)
+
+- Use `DeepReadonly<{ ... }>` (from `@event-driven-io/emmett`) for all domain object types — write model subtypes, alert states, pairs, etc.
+- Do NOT add `readonly` manually to individual fields; let `DeepReadonly` handle it.
+- Example:
+  ```ts
+  import type { DeepReadonly } from '@event-driven-io/emmett'
+
+  type AltSmallAlertState = DeepReadonly<{
+    alertId: AlertId
+    value: AltLevel
+    takenAt: Date
+  }>
+  ```
+- Each variant in the write model union also uses `DeepReadonly`. Wrap each branch individually:
+  ```ts
+  type LiverCancerRiskMonitor =
+    | DeepReadonly<{ status: 'MONITORING'; pairs: AlertPair[]; ... }>
+    | DeepReadonly<{ status: 'BIG_ALERT_RAISED'; pairs: [AlertPair, AlertPair, AlertPair]; ... }>
+  ```
 
 ## Reference files
 

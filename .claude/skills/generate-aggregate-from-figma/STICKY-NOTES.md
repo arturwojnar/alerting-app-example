@@ -38,6 +38,8 @@ Yellow notes appearing between a command and its resulting event(s), or between 
 
 Multiple commands sharing a single write model = **mutually blocking commands** (result of one affects the other).
 
+Different commands may share the same write model, but before the shared write model the event body sticky notes should be placed.
+
 **Read Model** — one or more events produce a state:
 `Event(s) → State`
 `f(event, current state) → new state`

@@ -66,18 +66,24 @@ Same format as Write Models.
 ## 6. Flow
 
 Wrap all lines in a single code block. One line per command or projection.
-Join simultaneous events and parallel invariants with `|`, not `→`.
-Do not put Write Models in the Flow — they are declared in Write Models section.
+
+**`→`** — sequential causation: one thing triggers the next (command → invariant, invariant → event, event → invariant).
+**`|`** — simultaneity: things happen at the same time or are evaluated together:
+  - Multiple invariants checked in parallel for the same command/event
+  - Multiple events emitted at once
+  - Multiple events feeding one read model
 
 ```markdown
 ## Flow
 
 \```
-Command(RaiseAlertsAfterAltResultRegistered) → Invariant(AC2) → Event(AltSmallAlertRaised) | Invariant(AC4-formula) → Event(LiverCancerRiskBigAlertRaised)
+Command(RaiseAlertsAfterAltResultRegistered) → Invariant(AC2) → Event(AltSmallAlertRaised) → Invariant(AC4-formula) → Event(LiverCancerRiskBigAlertRaised)
 Command(ResolveAltSmallAlert) → Invariant(AC4-resolve) → Event(AltSmallAlertResolved)
 Event(AltSmallAlertRaised) | Event(FibrosisLevelSmallAlertRaised) → ReadModel(PatientAlertSummary)
 \```
 ```
+
+Do not put Write Models in the Flow — they are declared in Write Models section.
 
 ## 7. History
 
