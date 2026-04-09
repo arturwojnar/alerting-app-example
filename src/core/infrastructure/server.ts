@@ -1,11 +1,20 @@
 import Fastify from 'fastify'
 import dotenv from 'dotenv'
 import packageJson from '../../../package.json' with { type: 'json' }
+import { connectDb, closeDb } from './db.js'
 
 dotenv.config()
 
 const fastify = Fastify({
   logger: true,
+})
+
+fastify.addHook('onReady', async () => {
+  await connectDb()
+})
+
+fastify.addHook('onClose', async () => {
+  await closeDb()
 })
 
 fastify.get('/', async (_, reply) => {

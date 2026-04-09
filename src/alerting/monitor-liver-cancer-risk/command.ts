@@ -5,45 +5,50 @@ import type {
   DoctorId,
   FibrosisLevel,
   PatientId,
-} from './type.ts'
+} from './type.js'
 
 type RaiseAlertsAfterAltResultRegistered = Command<
   'RaiseAlertsAfterAltResultRegistered',
   { value: AltLevel; testTakenAt: Date },
   { patientId: PatientId }
 >
+
 type RaiseAlertsAfterFibrosisLevelRegistered = Command<
   'RaiseAlertsAfterFibrosisLevelRegistered',
-  { value: FibrosisLevel; resultTakenAt: Date },
+  { value: FibrosisLevel; testTakenAt: Date },
   { patientId: PatientId }
 >
+
 type ResolveAltSmallAlert = Command<
   'ResolveAltSmallAlert',
-  {},
-  { alertId: AlertId; resolvedBy: DoctorId; timestamp: Date }
+  Record<string, never>,
+  { patientId: PatientId; alertId: AlertId; resolvedBy: DoctorId }
 >
-type ResolveFibrosisLevelSmallAlert = Command<
-  'ResolveFibrosisLevelSmallAlert',
-  {},
-  { alertId: AlertId; resolvedBy: DoctorId; timestamp: Date }
+
+type ResolveFibrosisSmallAlert = Command<
+  'ResolveFibrosisSmallAlert',
+  Record<string, never>,
+  { patientId: PatientId; alertId: AlertId; resolvedBy: DoctorId }
 >
+
 type ResolveLiverCancerRiskBigAlert = Command<
   'ResolveLiverCancerRiskBigAlert',
-  {},
-  { alertId: AlertId; timestamp: Date }
+  Record<string, never>,
+  { patientId: PatientId; alertId: AlertId; resolvedBy: DoctorId }
 >
+
 type AlertCommand =
   | RaiseAlertsAfterAltResultRegistered
   | RaiseAlertsAfterFibrosisLevelRegistered
   | ResolveAltSmallAlert
-  | ResolveFibrosisLevelSmallAlert
+  | ResolveFibrosisSmallAlert
   | ResolveLiverCancerRiskBigAlert
 
 export type {
-  AlertCommand,
   RaiseAlertsAfterAltResultRegistered,
   RaiseAlertsAfterFibrosisLevelRegistered,
   ResolveAltSmallAlert,
-  ResolveFibrosisLevelSmallAlert,
+  ResolveFibrosisSmallAlert,
   ResolveLiverCancerRiskBigAlert,
+  AlertCommand,
 }
