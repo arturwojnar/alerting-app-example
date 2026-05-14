@@ -19,9 +19,10 @@ const STREAM_PREFIX = 'liverCancerRisk'
 const streamName = (patientId: PatientId) =>
   `${STREAM_PREFIX}-${patientId as string}`
 
-const commandHandler = CommandHandler<LiverCancerRiskMonitor | null, AlertEvent>(
-  { evolve, initialState },
-)
+const commandHandler = CommandHandler<
+  LiverCancerRiskMonitor | null,
+  AlertEvent
+>({ evolve, initialState })
 
 const requirePatientContext = async (db: PongoDb, patientId: PatientId) => {
   const patient = await getPatientContext(db, patientId)

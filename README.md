@@ -40,3 +40,68 @@ Run docker compose to start needed dependencies:
 ```bash
 docker compose up -d
 ```
+
+## Environment
+
+Copy `sample.env` to `.env` and set the database URL:
+
+```bash
+cp sample.env .env
+```
+
+`.env` should contain:
+
+```
+PORT=3000
+DATABASE_URL=postgresql://alerting:alerting@localhost:5432/alerting
+```
+
+## Running the app
+
+Install dependencies and start the server:
+
+```bash
+npm ci
+npm start
+```
+
+The server starts on the port defined in `.env` (default `3000`).
+
+## API
+
+Seed a patient context before registering measurements (the patient context is a stub — it is not derived from events):
+
+```bash
+# Create patient
+curl -X POST http://localhost:3000/patients \
+  -H "Content-Type: application/json" \
+  -d '{ "patientId": "p1", "gender": "male", "dateOfBirth": "1970-06-15" }'
+
+# Register ALT measurement
+curl -X POST http://localhost:3000/patients/p1/measurements/alt \
+  -H "Content-Type: application/json" \
+  -d '{ "value": 50, "testTakenAt": "2024-01-10T10:00:00Z" }'
+
+# Register fibrosis measurement
+curl -X POST http://localhost:3000/patients/p1/measurements/fibrosis \
+  -H "Content-Type: application/json" \
+  -d '{ "value": "F3", "testTakenAt": "2024-01-10T10:00:00Z" }'
+
+# Read liver cancer risk summary
+curl http://localhost:3000/patients/p1/liver-cancer-risk
+
+# Resolve a small ALT alert (alertId comes from the summary response)
+curl -X PATCH http://localhost:3000/patients/p1/alerts/<alertId>/alt/resolve \
+  -H "Content-Type: application/json" \
+  -d '{ "resolvedBy": "doctor-1" }'
+
+# Resolve a small fibrosis alert
+curl -X PATCH http://localhost:3000/patients/p1/alerts/<alertId>/fibrosis/resolve \
+  -H "Content-Type: application/json" \
+  -d '{ "resolvedBy": "doctor-1" }'
+
+# Resolve the big alert (also resolves all 6 sub-alerts in the 3 pairs)
+curl -X PATCH http://localhost:3000/patients/p1/alerts/<alertId>/big/resolve \
+  -H "Content-Type: application/json" \
+  -d '{ "resolvedBy": "doctor-1" }'
+```

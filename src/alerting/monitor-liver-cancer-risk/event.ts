@@ -12,7 +12,6 @@ type AltSmallAlertRaised = Event<
   { value: AltLevel; takenAt: Date },
   { alertId: AlertId; patientId: PatientId }
 >
-
 type FibrosisSmallAlertRaised = Event<
   'FibrosisSmallAlertRaised',
   { value: FibrosisLevel; takenAt: Date },

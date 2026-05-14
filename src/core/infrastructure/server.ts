@@ -1,4 +1,5 @@
 import Fastify from 'fastify'
+import type { FastifyPluginAsync } from 'fastify'
 import dotenv from 'dotenv'
 import packageJson from '../../../package.json' with { type: 'json' }
 import { connectDb, closeDb } from './db.js'
@@ -8,6 +9,10 @@ dotenv.config()
 const fastify = Fastify({
   logger: true,
 })
+
+fastify.setReplySerializer((payload) =>
+  JSON.stringify(payload, (_, v) => (typeof v === 'bigint' ? Number(v) : v)),
+)
 
 fastify.addHook('onReady', async () => {
   await connectDb()
@@ -23,6 +28,8 @@ fastify.get('/', async (_, reply) => {
 })
 
 export const getFastify = () => fastify
+
+export const register = (plugin: FastifyPluginAsync) => fastify.register(plugin)
 
 export const listen = () =>
   fastify.listen(
