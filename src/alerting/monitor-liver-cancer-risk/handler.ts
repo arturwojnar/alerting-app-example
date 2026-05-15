@@ -1,6 +1,5 @@
 import { CommandHandler } from '@event-driven-io/emmett'
 import type { EventStore } from '@event-driven-io/emmett'
-import type { PongoDb } from '@event-driven-io/pongo'
 import type {
   RaiseAlertsAfterAltResultRegistered,
   RaiseAlertsAfterFibrosisLevelRegistered,
@@ -11,7 +10,6 @@ import type {
 import { decide } from './decide.js'
 import type { AlertEvent } from './event.js'
 import { evolve, initialState } from './evolve.js'
-import { getPatientContext } from './patientContext.js'
 import type { LiverCancerRiskMonitor, PatientId } from './type.js'
 
 const STREAM_PREFIX = 'liverCancerRisk'
@@ -24,72 +22,45 @@ const commandHandler = CommandHandler<
   AlertEvent
 >({ evolve, initialState })
 
-const requirePatientContext = async (db: PongoDb, patientId: PatientId) => {
-  const patient = await getPatientContext(db, patientId)
-  if (!patient)
-    throw new Error(`PatientContext not found: ${patientId as string}`)
-  return patient
-}
-
-const handleRaiseAlertsAfterAltResultRegistered = async (
+const handleRaiseAlertsAfterAltResultRegistered = (
   store: EventStore,
-  db: PongoDb,
   command: RaiseAlertsAfterAltResultRegistered,
-) => {
-  const { patientId } = command.metadata
-  const patient = await requirePatientContext(db, patientId)
-  await commandHandler(store, streamName(patientId), (state) =>
-    decide(command, state, patient),
+) =>
+  commandHandler(store, streamName(command.metadata.patientId), (state) =>
+    decide(command, state),
   )
-}
 
-const handleRaiseAlertsAfterFibrosisLevelRegistered = async (
+const handleRaiseAlertsAfterFibrosisLevelRegistered = (
   store: EventStore,
-  db: PongoDb,
   command: RaiseAlertsAfterFibrosisLevelRegistered,
-) => {
-  const { patientId } = command.metadata
-  const patient = await requirePatientContext(db, patientId)
-  await commandHandler(store, streamName(patientId), (state) =>
-    decide(command, state, patient),
+) =>
+  commandHandler(store, streamName(command.metadata.patientId), (state) =>
+    decide(command, state),
   )
-}
 
-const handleResolveAltSmallAlert = async (
+const handleResolveAltSmallAlert = (
   store: EventStore,
-  db: PongoDb,
   command: ResolveAltSmallAlert,
-) => {
-  const { patientId } = command.metadata
-  const patient = await requirePatientContext(db, patientId)
-  await commandHandler(store, streamName(patientId), (state) =>
-    decide(command, state, patient),
+) =>
+  commandHandler(store, streamName(command.metadata.patientId), (state) =>
+    decide(command, state),
   )
-}
 
-const handleResolveFibrosisSmallAlert = async (
+const handleResolveFibrosisSmallAlert = (
   store: EventStore,
-  db: PongoDb,
   command: ResolveFibrosisSmallAlert,
-) => {
-  const { patientId } = command.metadata
-  const patient = await requirePatientContext(db, patientId)
-  await commandHandler(store, streamName(patientId), (state) =>
-    decide(command, state, patient),
+) =>
+  commandHandler(store, streamName(command.metadata.patientId), (state) =>
+    decide(command, state),
   )
-}
 
-const handleResolveLiverCancerRiskBigAlert = async (
+const handleResolveLiverCancerRiskBigAlert = (
   store: EventStore,
-  db: PongoDb,
   command: ResolveLiverCancerRiskBigAlert,
-) => {
-  const { patientId } = command.metadata
-  const patient = await requirePatientContext(db, patientId)
-  await commandHandler(store, streamName(patientId), (state) =>
-    decide(command, state, patient),
+) =>
+  commandHandler(store, streamName(command.metadata.patientId), (state) =>
+    decide(command, state),
   )
-}
 
 export {
   handleRaiseAlertsAfterAltResultRegistered,

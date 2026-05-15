@@ -1,4 +1,5 @@
 import { assertNever, literalObject } from '@chassisjs/hermes'
+import type { PatientContext } from './patientContext.js'
 import type {
   AlertCommand,
   RaiseAlertsAfterAltResultRegistered,
@@ -16,7 +17,6 @@ import type {
   LiverCancerRiskBigAlertRaised,
   LiverCancerRiskBigAlertResolved,
 } from './event.js'
-import type { PatientContext } from './patientContext.js'
 import type {
   AlertId,
   AlertPair,
@@ -123,9 +123,9 @@ const tryFormBigAlert = (
 const decideRaiseAlt = (
   command: RaiseAlertsAfterAltResultRegistered,
   state: LiverCancerRiskMonitor | null,
-  patient: PatientContext,
 ) => {
   const { data, metadata } = command
+  const patient = metadata.patient
   if (state?.status === 'BIG_ALERT_RAISED') return []
   if (!isAlarmingAlt(data.value, patient.gender)) return []
 
@@ -163,9 +163,9 @@ const decideRaiseAlt = (
 const decideRaiseFibrosis = (
   command: RaiseAlertsAfterFibrosisLevelRegistered,
   state: LiverCancerRiskMonitor | null,
-  patient: PatientContext,
 ) => {
   const { data, metadata } = command
+  const patient = metadata.patient
   if (state?.status === 'BIG_ALERT_RAISED') return []
   if (!isAlarmingFibrosis(data.value)) return []
 
@@ -300,13 +300,12 @@ const decideResolveBigAlert = (
 const decide = (
   command: AlertCommand,
   state: LiverCancerRiskMonitor | null,
-  patient: PatientContext,
 ) => {
   switch (command.type) {
     case 'RaiseAlertsAfterAltResultRegistered':
-      return decideRaiseAlt(command, state, patient)
+      return decideRaiseAlt(command, state)
     case 'RaiseAlertsAfterFibrosisLevelRegistered':
-      return decideRaiseFibrosis(command, state, patient)
+      return decideRaiseFibrosis(command, state)
     case 'ResolveAltSmallAlert':
       return decideResolveAlt(command, state)
     case 'ResolveFibrosisSmallAlert':

@@ -1,7 +1,13 @@
 import type { FastifyPluginAsync } from 'fastify'
 import { getEventStore, getPongoDb } from '../../core/infrastructure/db.js'
-import type { PatientContext } from './patientContext.js'
-import type { AlertId, AltLevel, DoctorId, FibrosisLevel, PatientId } from './type.js'
+import { getPatientContext, type PatientContext } from './patientContext.js'
+import type {
+  AlertId,
+  AltLevel,
+  DoctorId,
+  FibrosisLevel,
+  PatientId,
+} from './type.js'
 import {
   handleRaiseAlertsAfterAltResultRegistered,
   handleRaiseAlertsAfterFibrosisLevelRegistered,
@@ -14,14 +20,27 @@ import type { LiverCancerRiskSummary } from './projection.js'
 const PATIENT_CONTEXT_COLLECTION = 'patientContexts'
 const LIVER_CANCER_RISK_SUMMARY_COLLECTION = 'liverCancerRiskSummary'
 
-const monitorLiverCancerRiskController: FastifyPluginAsync = async (fastify) => {
+const requirePatientContext = async (patientId: PatientId) => {
+  const patient = await getPatientContext(getPongoDb(), patientId)
+
+  if (!patient)
+    throw new Error(`PatientContext not found: ${patientId as string}`)
+
+  return patient
+}
+
+const monitorLiverCancerRiskController: FastifyPluginAsync = async (
+  fastify,
+) => {
   fastify.post<{
     Body: { patientId: string; gender: 'male' | 'female'; dateOfBirth: string }
   }>('/patients', async (request, reply) => {
     const { patientId, gender, dateOfBirth } = request.body
+
     await getPongoDb()
       .collection<PatientContext>(PATIENT_CONTEXT_COLLECTION)
       .handle(patientId, () => ({ patientId, gender, dateOfBirth }))
+
     return reply.code(201).send({ patientId })
   })
 
@@ -31,11 +50,14 @@ const monitorLiverCancerRiskController: FastifyPluginAsync = async (fastify) => 
   }>('/patients/:patientId/measurements/alt', async (request, reply) => {
     const { patientId } = request.params
     const { value, testTakenAt } = request.body
-    await handleRaiseAlertsAfterAltResultRegistered(getEventStore(), getPongoDb(), {
+
+    const patient = await requirePatientContext(patientId as PatientId)
+    await handleRaiseAlertsAfterAltResultRegistered(getEventStore(), {
       type: 'RaiseAlertsAfterAltResultRegistered',
       data: { value: value as AltLevel, testTakenAt: new Date(testTakenAt) },
-      metadata: { patientId: patientId as PatientId },
+      metadata: { patientId: patientId as PatientId, patient },
     })
+
     return reply.code(202).send()
   })
 
@@ -45,67 +67,85 @@ const monitorLiverCancerRiskController: FastifyPluginAsync = async (fastify) => 
   }>('/patients/:patientId/measurements/fibrosis', async (request, reply) => {
     const { patientId } = request.params
     const { value, testTakenAt } = request.body
-    await handleRaiseAlertsAfterFibrosisLevelRegistered(getEventStore(), getPongoDb(), {
+
+    const patient = await requirePatientContext(patientId as PatientId)
+    await handleRaiseAlertsAfterFibrosisLevelRegistered(getEventStore(), {
       type: 'RaiseAlertsAfterFibrosisLevelRegistered',
       data: { value, testTakenAt: new Date(testTakenAt) },
-      metadata: { patientId: patientId as PatientId },
+      metadata: { patientId: patientId as PatientId, patient },
     })
+
     return reply.code(202).send()
   })
 
   fastify.patch<{
     Params: { patientId: string; alertId: string }
     Body: { resolvedBy: string }
-  }>('/patients/:patientId/alerts/:alertId/alt/resolve', async (request, reply) => {
-    const { patientId, alertId } = request.params
-    const { resolvedBy } = request.body
-    await handleResolveAltSmallAlert(getEventStore(), getPongoDb(), {
-      type: 'ResolveAltSmallAlert',
-      data: {},
-      metadata: {
-        patientId: patientId as PatientId,
-        alertId: alertId as AlertId,
-        resolvedBy: resolvedBy as DoctorId,
-      },
-    })
-    return reply.code(204).send()
-  })
+  }>(
+    '/patients/:patientId/alerts/:alertId/alt/resolve',
+    async (request, reply) => {
+      const { patientId, alertId } = request.params
+      const { resolvedBy } = request.body
+
+      await handleResolveAltSmallAlert(getEventStore(), {
+        type: 'ResolveAltSmallAlert',
+        data: {},
+        metadata: {
+          patientId: patientId as PatientId,
+          alertId: alertId as AlertId,
+          resolvedBy: resolvedBy as DoctorId,
+        },
+      })
+
+      return reply.code(204).send()
+    },
+  )
 
   fastify.patch<{
     Params: { patientId: string; alertId: string }
     Body: { resolvedBy: string }
-  }>('/patients/:patientId/alerts/:alertId/fibrosis/resolve', async (request, reply) => {
-    const { patientId, alertId } = request.params
-    const { resolvedBy } = request.body
-    await handleResolveFibrosisSmallAlert(getEventStore(), getPongoDb(), {
-      type: 'ResolveFibrosisSmallAlert',
-      data: {},
-      metadata: {
-        patientId: patientId as PatientId,
-        alertId: alertId as AlertId,
-        resolvedBy: resolvedBy as DoctorId,
-      },
-    })
-    return reply.code(204).send()
-  })
+  }>(
+    '/patients/:patientId/alerts/:alertId/fibrosis/resolve',
+    async (request, reply) => {
+      const { patientId, alertId } = request.params
+      const { resolvedBy } = request.body
+
+      await handleResolveFibrosisSmallAlert(getEventStore(), {
+        type: 'ResolveFibrosisSmallAlert',
+        data: {},
+        metadata: {
+          patientId: patientId as PatientId,
+          alertId: alertId as AlertId,
+          resolvedBy: resolvedBy as DoctorId,
+        },
+      })
+
+      return reply.code(204).send()
+    },
+  )
 
   fastify.patch<{
     Params: { patientId: string; alertId: string }
     Body: { resolvedBy: string }
-  }>('/patients/:patientId/alerts/:alertId/big/resolve', async (request, reply) => {
-    const { patientId, alertId } = request.params
-    const { resolvedBy } = request.body
-    await handleResolveLiverCancerRiskBigAlert(getEventStore(), getPongoDb(), {
-      type: 'ResolveLiverCancerRiskBigAlert',
-      data: {},
-      metadata: {
-        patientId: patientId as PatientId,
-        alertId: alertId as AlertId,
-        resolvedBy: resolvedBy as DoctorId,
-      },
-    })
-    return reply.code(204).send()
-  })
+  }>(
+    '/patients/:patientId/alerts/:alertId/big/resolve',
+    async (request, reply) => {
+      const { patientId, alertId } = request.params
+      const { resolvedBy } = request.body
+
+      await handleResolveLiverCancerRiskBigAlert(getEventStore(), {
+        type: 'ResolveLiverCancerRiskBigAlert',
+        data: {},
+        metadata: {
+          patientId: patientId as PatientId,
+          alertId: alertId as AlertId,
+          resolvedBy: resolvedBy as DoctorId,
+        },
+      })
+
+      return reply.code(204).send()
+    },
+  )
 
   fastify.get<{
     Params: { patientId: string }
@@ -114,7 +154,10 @@ const monitorLiverCancerRiskController: FastifyPluginAsync = async (fastify) => 
     const summary = await getPongoDb()
       .collection<LiverCancerRiskSummary>(LIVER_CANCER_RISK_SUMMARY_COLLECTION)
       .findOne({ patientId })
-    if (!summary) return reply.code(404).send({ message: 'No record found for patient' })
+
+    if (!summary)
+      return reply.code(404).send({ message: 'No record found for patient' })
+
     return reply.send(summary)
   })
 }

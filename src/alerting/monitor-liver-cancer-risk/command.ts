@@ -1,4 +1,5 @@
 import type { Command } from '@event-driven-io/emmett'
+import type { PatientContext } from './patientContext.js'
 import type {
   AlertId,
   AltLevel,
@@ -10,13 +11,13 @@ import type {
 type RaiseAlertsAfterAltResultRegistered = Command<
   'RaiseAlertsAfterAltResultRegistered',
   { value: AltLevel; testTakenAt: Date },
-  { patientId: PatientId }
+  { patientId: PatientId; patient: PatientContext }
 >
 
 type RaiseAlertsAfterFibrosisLevelRegistered = Command<
   'RaiseAlertsAfterFibrosisLevelRegistered',
   { value: FibrosisLevel; testTakenAt: Date },
-  { patientId: PatientId }
+  { patientId: PatientId; patient: PatientContext }
 >
 
 type ResolveAltSmallAlert = Command<

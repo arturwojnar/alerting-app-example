@@ -30,10 +30,9 @@ describe('decide: RaiseAlertsAfterAltResultRegistered', () => {
       {
         type: 'RaiseAlertsAfterAltResultRegistered',
         data: { value: 50 as unknown as AltLevel, testTakenAt: new Date() },
-        metadata: { patientId: PATIENT_ID },
+        metadata: { patientId: PATIENT_ID, patient: mockPatient },
       },
       null,
-      mockPatient,
     )
     expect(events).toHaveLength(1)
     expect(events[0]?.type).toBe('AltSmallAlertRaised')
@@ -44,10 +43,9 @@ describe('decide: RaiseAlertsAfterAltResultRegistered', () => {
       {
         type: 'RaiseAlertsAfterAltResultRegistered',
         data: { value: 45 as unknown as AltLevel, testTakenAt: new Date() },
-        metadata: { patientId: PATIENT_ID },
+        metadata: { patientId: PATIENT_ID, patient: mockPatient },
       },
       null,
-      mockPatient,
     )
     expect(events).toHaveLength(0)
   })
@@ -101,10 +99,9 @@ describe('decide: RaiseAlertsAfterAltResultRegistered', () => {
       {
         type: 'RaiseAlertsAfterAltResultRegistered',
         data: { value: 50 as unknown as AltLevel, testTakenAt: new Date() },
-        metadata: { patientId: PATIENT_ID },
+        metadata: { patientId: PATIENT_ID, patient: mockPatient },
       },
       bigAlertState,
-      mockPatient,
     )
     expect(events).toHaveLength(0)
   })
@@ -115,10 +112,9 @@ describe('decide: RaiseAlertsAfterAltResultRegistered', () => {
       {
         type: 'RaiseAlertsAfterAltResultRegistered',
         data: { value: 36 as unknown as AltLevel, testTakenAt: new Date() },
-        metadata: { patientId: PATIENT_ID },
+        metadata: { patientId: PATIENT_ID, patient: femalePatient },
       },
       null,
-      femalePatient,
     )
     expect(events).toHaveLength(1)
     expect(events[0]?.type).toBe('AltSmallAlertRaised')
@@ -131,10 +127,9 @@ describe('decide: RaiseAlertsAfterFibrosisLevelRegistered', () => {
       {
         type: 'RaiseAlertsAfterFibrosisLevelRegistered',
         data: { value: 'F2', testTakenAt: new Date() },
-        metadata: { patientId: PATIENT_ID },
+        metadata: { patientId: PATIENT_ID, patient: mockPatient },
       },
       null,
-      mockPatient,
     )
     expect(events).toHaveLength(1)
     expect(events[0]?.type).toBe('FibrosisSmallAlertRaised')
@@ -145,10 +140,9 @@ describe('decide: RaiseAlertsAfterFibrosisLevelRegistered', () => {
       {
         type: 'RaiseAlertsAfterFibrosisLevelRegistered',
         data: { value: 'F0', testTakenAt: new Date() },
-        metadata: { patientId: PATIENT_ID },
+        metadata: { patientId: PATIENT_ID, patient: mockPatient },
       },
       null,
-      mockPatient,
     )
     expect(events).toHaveLength(0)
   })
@@ -173,7 +167,7 @@ describe('decide: ResolveAltSmallAlert', () => {
       data: {},
       metadata: { patientId: PATIENT_ID, alertId, resolvedBy: DOCTOR_ID },
     }
-    const events = decide(command, state, mockPatient)
+    const events = decide(command, state)
     expect(events).toHaveLength(1)
     expect(events[0]?.type).toBe('AltSmallAlertResolved')
   })
@@ -199,7 +193,7 @@ describe('decide: ResolveAltSmallAlert', () => {
         resolvedBy: DOCTOR_ID,
       },
     }
-    expect(decide(command, state, mockPatient)).toHaveLength(0)
+    expect(decide(command, state)).toHaveLength(0)
   })
 
   it('returns no events when BIG_ALERT_RAISED (AC4-resolve-small)', () => {
@@ -256,7 +250,7 @@ describe('decide: ResolveAltSmallAlert', () => {
         resolvedBy: DOCTOR_ID,
       },
     }
-    expect(decide(command, bigAlertState, mockPatient)).toHaveLength(0)
+    expect(decide(command, bigAlertState)).toHaveLength(0)
   })
 })
 
@@ -316,7 +310,7 @@ describe('decide: ResolveLiverCancerRiskBigAlert', () => {
         resolvedBy: DOCTOR_ID,
       },
     }
-    const events = decide(command, bigAlertState, mockPatient)
+    const events = decide(command, bigAlertState)
     expect(events).toHaveLength(7)
     expect(events.at(-1)?.type).toBe('LiverCancerRiskBigAlertResolved')
   })
@@ -379,6 +373,6 @@ describe('decide: ResolveLiverCancerRiskBigAlert', () => {
         resolvedBy: DOCTOR_ID,
       },
     }
-    expect(decide(command, bigAlertState, mockPatient)).toHaveLength(0)
+    expect(decide(command, bigAlertState)).toHaveLength(0)
   })
 })
