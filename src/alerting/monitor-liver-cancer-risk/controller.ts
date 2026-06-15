@@ -50,8 +50,8 @@ const monitorLiverCancerRiskController: FastifyPluginAsync = async (
   }>('/patients/:patientId/measurements/alt', async (request, reply) => {
     const { patientId } = request.params
     const { value, testTakenAt } = request.body
-
     const patient = await requirePatientContext(patientId as PatientId)
+
     await handleRaiseAlertsAfterAltResultRegistered(getEventStore(), {
       type: 'RaiseAlertsAfterAltResultRegistered',
       data: { value: value as AltLevel, testTakenAt: new Date(testTakenAt) },
@@ -67,8 +67,8 @@ const monitorLiverCancerRiskController: FastifyPluginAsync = async (
   }>('/patients/:patientId/measurements/fibrosis', async (request, reply) => {
     const { patientId } = request.params
     const { value, testTakenAt } = request.body
-
     const patient = await requirePatientContext(patientId as PatientId)
+
     await handleRaiseAlertsAfterFibrosisLevelRegistered(getEventStore(), {
       type: 'RaiseAlertsAfterFibrosisLevelRegistered',
       data: { value, testTakenAt: new Date(testTakenAt) },
