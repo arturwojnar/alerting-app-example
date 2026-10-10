@@ -1,0 +1,96 @@
+# https://pulsar.apache.org/docs/5.0.x/getting-started-docker-compose/#step-1-configure-the-composeyml-template
+version: '3'
+networks:
+  pulsar:
+    driver: bridge
+services:
+  # Start Oxia (metadata store)
+  oxia:
+    image: oxia/oxia:latest
+    container_name: oxia
+    restart: on-failure
+    networks:
+      - pulsar
+    volumes:
+      - oxia-data:/data
+    command:
+      - oxia
+      - standalone
+    healthcheck:
+      test: ["CMD", "oxia", "health", "--port=6648"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  # Init cluster metadata
+  pulsar-init:
+    container_name: pulsar-init
+    hostname: pulsar-init
+    image: apachepulsar/pulsar:5.0.0-M2
+    networks:
+      - pulsar
+    command:
+      - bash
+      - -c
+      - |
+        bin/pulsar initialize-cluster-metadata \
+        --cluster cluster-a \
+        --metadata-store oxia://oxia:6648/default \
+        --configuration-store oxia://oxia:6648/default \
+        --web-service-url http://broker:8080 \
+        --broker-service-url pulsar://broker:6650
+    depends_on:
+      oxia:
+        condition: service_healthy
+
+  # Start bookie
+  bookie:
+    image: apachepulsar/pulsar:5.0.0-M2
+    container_name: bookie
+    restart: on-failure
+    networks:
+      - pulsar
+    environment:
+      - clusterName=cluster-a
+      - metadataServiceUri=metadata-store:oxia://oxia:6648/default
+      - advertisedAddress=bookie
+      - BOOKIE_MEM=-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
+    depends_on:
+      oxia:
+        condition: service_healthy
+      pulsar-init:
+        condition: service_completed_successfully
+    volumes:
+      - bookie-data:/pulsar/data/bookkeeper
+    command: bash -c "bin/apply-config-from-env.py conf/bookkeeper.conf && exec bin/pulsar bookie"
+
+  # Start broker
+  broker:
+    image: apachepulsar/pulsar:5.0.0-M2
+    container_name: broker
+    hostname: broker
+    restart: on-failure
+    networks:
+      - pulsar
+    environment:
+      - metadataStoreUrl=oxia://oxia:6648/default
+      - clusterName=cluster-a
+      - managedLedgerDefaultEnsembleSize=1
+      - managedLedgerDefaultWriteQuorum=1
+      - managedLedgerDefaultAckQuorum=1
+      - advertisedAddress=broker
+      - advertisedListeners=external:pulsar://127.0.0.1:6650
+      - PULSAR_MEM=-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
+    depends_on:
+      oxia:
+        condition: service_healthy
+      bookie:
+        condition: service_started
+    ports:
+      - "6650:6650"
+      - "8080:8080"
+    command: bash -c "bin/apply-config-from-env.py conf/broker.conf && exec bin/pulsar broker"
+
+volumes:
+  oxia-data:
+  bookie-data:
